@@ -3,6 +3,12 @@
 # or, add the lines to the 'config.fish' file.
 
 function n --description 'support nnn quit and change directory'
+    # Block nesting of nnn in subshells
+    if [ (expr $NNNLVL + 0) -ge 1 ]
+        echo "nnn is already running"
+        return
+    end
+
     # The default behaviour is to cd on quit (nnn checks if NNN_TMPFILE is set)
     # To cd on quit only on ^G, export NNN_TMPFILE after the call to nnn
     if test -n "$XDG_CONFIG_HOME"
@@ -10,6 +16,11 @@ function n --description 'support nnn quit and change directory'
     else
         set -x NNN_TMPFILE "$HOME/.config/nnn/.lastd"
     end
+
+    # Unmask ^Q (, ^V etc.) (if required, see `stty -a`) to Quit nnn
+    # stty start undef
+    # stty stop undef
+    # stty lwrap undef
 
     nnn $argv
 

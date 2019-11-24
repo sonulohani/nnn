@@ -16,7 +16,7 @@
 
 `nnn` is a full-featured terminal file manager. It's tiny, [extremely light and fast](https://github.com/jarun/nnn/wiki/Performance).
 
-`nnn` is also a disk usage analyzer, a fuzzy app launcher, a batch file renamer and a file picker. The [plugin repository](https://github.com/jarun/nnn/tree/master/plugins#nnn-plugins) has 30+ plugins to extend the capabilities further. There's an independent [(neo)vim plugin](https://github.com/mcchrish/nnn.vim).
+`nnn` is also a disk usage analyzer, a fuzzy app launcher, a batch file renamer and a file picker. The [plugin repository](https://github.com/jarun/nnn/tree/master/plugins#nnn-plugins) has tons of plugins and documentation to extend the capabilities further. You can _plug_ new functionality to `nnn` instantly. There's an independent [(neo)vim plugin](https://github.com/mcchrish/nnn.vim).
 
 It runs smoothly on the Raspberry Pi, Termux [on Android](https://www.youtube.com/watch?v=AbaauM7gUJw), Linux, macOS, BSD, Cygwin and Linux subsystem for Windows. `nnn` works seamlessly with DEs and GUI utilities. It's nearly zero-config (with sensible defaults) and can be setup in less than 5 minutes.
 
@@ -56,8 +56,9 @@ Add to that an awesome [Wiki](https://github.com/jarun/nnn/wiki)!
   - Cross-dir file/all/range selection
   - Batch rename selection or dir entries
   - Copy (as), move (as), delete, archive, link selection
-  - Create, rename, duplicate files and dirs
+  - Create (with parents), rename, duplicate (anywhere) files and dirs
   - Spawn a shell, run apps, run commands, execute file
+  - Hovered file set as `$nnn` at prompt and spawned shell
   - Lock terminal (needs a locker)
 - Minimal deps, minimal config
 - Widely available
@@ -69,7 +70,7 @@ Add to that an awesome [Wiki](https://github.com/jarun/nnn/wiki)!
 
 1. Install the [utilities you may need](https://github.com/jarun/nnn#utility-dependencies) based on your regular workflows.
 2. Configure [cd on quit](https://github.com/jarun/nnn/wiki/Basic-use-cases#configure-cd-on-quit).
-3. Optionally open all text files in `$EDITOR` (fallback vi): `export NNN_USE_EDITOR=1`
+3. Optionally open all text files in `$EDITOR` (fallback vi): `export NNN_USE_EDITOR=1`.
 4. For additional functionality [install plugins](https://github.com/jarun/nnn/tree/master/plugins#installing-plugins) and the GUI app launcher [`nlaunch`](https://github.com/jarun/nnn/tree/master/misc/nlaunch).
 
 Notes:
@@ -88,7 +89,7 @@ A curses library with wide char support (e.g. ncursesw), libreadline (`make O_NO
 | Dependency | Installation | Operation |
 | --- | --- | --- |
 | xdg-open (Linux), open(1) (macOS), cygstart (Cygwin) | base | desktop opener |
-| file, coreutils (cp, mv, rm), findutils (xargs) | base | file type, copy, move and remove |
+| file, coreutils (cp, mv, rm), xargs | base | file type, copy, move and remove |
 | tar, (un)zip [atool/bsdtar for more formats] | base | create, list, extract tar, gzip, bzip2, zip |
 | archivemount, fusermount(3) | optional | mount, unmount archives |
 | sshfs, fusermount(3) | optional | mount, unmount remotes |
@@ -146,12 +147,12 @@ There is no config file. Associated files are stored under `${XDG_CONFIG_HOME:-$
 
 | Example `export` | Description |
 | --- | --- |
+| `NNN_OPENER=mimeopen` | custom file opener |
 | `NNN_BMS='d:~/Documents;D:~/Docs archive/'` | key-bookmark pairs [max 10] |
-| `NNN_PLUG='p:mocplay;m:nmount;t:thumb;x:_chmod +x'` | key-plugin (or cmd) pairs (<kbd>:key</kbd> to run) [max 15] |
+| `NNN_PLUG='m:nmount;t:imgthumb;x:_chmod +x $nnn'` | key-plugin (or cmd) pairs (<kbd>:key</kbd> to run) [max 15] |
 | `NNN_USE_EDITOR=1` | open text files in `$VISUAL` (else `$EDITOR`, fallback vi) |
 | `NNN_CONTEXT_COLORS='1234'` | specify per context color [default: '4444' (all blue)] |
 | `NNN_SSHFS_OPTS='sshfs -o reconnect,idmap=user'` | specify SSHFS options |
-| `NNN_OPENER=mimeopen` | custom file opener |
 | `NNN_IDLE_TIMEOUT=300` | idle seconds to lock terminal [default: disabled] |
 | `NNN_COPIER=copier` | clipboard copier script [default: none] |
 | `NNN_TRASH=1` | trash files to the desktop Trash [default: delete] |
@@ -172,6 +173,7 @@ optional args:
  -c      cli-only opener
  -d      detail mode
  -e name load session by name
+ -E      EDITOR for undetached edits
  -f      run filter as cmd on prompt key
  -H      show hidden files
  -i      nav-as-you-type mode
@@ -207,10 +209,10 @@ The list below is from the **dev branch**. Press <kbd>?</kbd> in `nnn` to see th
          Q ^Q  Quit  ^G  QuitCD  q  Quit context
  FILES
            ^O  Open with...      n  Create new/link
-            D  File detail   ^R F2  Rename/duplicate
+            D  File details  ^R F2  Rename/duplicate
    Space ^J/a  Select entry/all  r  Batch rename
          m ^K  Sel range, clear  M  List selection
-            P  Copy selection    K  Edit selection
+            P  Copy selection    K  Edit, flush sel
             V  Move selection    w  Copy/move sel as
             X  Del selection    ^X  Del entry
             f  Create archive    T  Mount archive
@@ -218,13 +220,13 @@ The list below is from the **dev branch**. Press <kbd>?</kbd> in `nnn` to see th
             e  Edit in EDITOR    p  Open in PAGER
  ORDER TOGGLES
             A  Apparent du       S  du
-            s  Size   E  Extn    t  Time
+            z  Size   E  Extn    t  Time
  MISC
-         ! ^]  Shell             C  Execute entry
-         R ^V  Pick plugin   :K xK  Execute plugin K
+         ! ^]  Shell      ;K :K xK  Execute plugin K
+            C  Execute entry  R ^V  Pick plugin
             U  Manage session    =  Launch
             c  SSHFS mount       u  Unmount
-           ^P  Prompt/run cmd    L  Lock
+         ] ^P  Prompt/run cmd    L  Lock
 ```
 
 Notes:
@@ -281,4 +283,4 @@ To lookup keyboard shortcuts at runtime, press <kbd>?</kbd>.
 - [Sijmen J. Mulder](https://github.com/sjmulder)
 - and other contributors
 
-Visit the to the [ToDo list](https://github.com/jarun/nnn/issues/337) to contribute.
+`nnn` is actively developed. Visit the to the [ToDo list](https://github.com/jarun/nnn/issues/386) to contribute or see the features in progress.
